@@ -46,6 +46,7 @@ function createWindow(sendToRenderer, geminiSessionRef, randomNames = null) {
             enableBlinkFeatures: 'GetDisplayMedia',
             webSecurity: true,
             allowRunningInsecureContent: false,
+            enableScreenshots: true,
         },
         backgroundColor: '#00000000',
     });
@@ -136,6 +137,18 @@ function createWindow(sendToRenderer, geminiSessionRef, randomNames = null) {
 
     setupWindowIpcHandlers(mainWindow, sendToRenderer, geminiSessionRef);
 
+    // Add screenshot shortcut
+    globalShortcut.register('Alt+Shift+S', () => {
+        const { imageDir } = ensureDataDirectories();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const screenshotPath = path.join(imageDir, `screenshot-${timestamp}.png`);
+        
+        mainWindow.webContents.capturePage().then((image) => {
+            fs.writeFileSync(screenshotPath, image.toPNG());
+            sendToRenderer('screenshot-taken', screenshotPath);
+        });
+    });
+
     return mainWindow;
 }
 
@@ -153,6 +166,7 @@ function getDefaultKeybinds() {
         nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
         scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
         scrollDown: isMac ? 'Cmd+Shift+Down' : 'Ctrl+Shift+Down',
+        screenshot: isMac ? 'Cmd+Shift+S' : 'Alt+Shift+S',
     };
 }
 
@@ -312,6 +326,38 @@ function updateGlobalShortcuts(keybinds, mainWindow, sendToRenderer, geminiSessi
             console.log(`Registered scrollDown: ${keybinds.scrollDown}`);
         } catch (error) {
             console.error(`Failed to register scrollDown (${keybinds.scrollDown}):`, error);
+        }
+    }
+
+    // Register screenshot shortcut
+    if (keybinds.screenshot) {
+        try {
+            globalShortcut.register(keybinds.screenshot, async () => {
+                const { imageDir } = ensureDataDirectories();
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const screenshotPath = path.join(imageDir, `screenshot-${timestamp}.png`);
+                
+                // Temporarily hide window for screenshot
+                const wasVisible = mainWindow.isVisible();
+                if (wasVisible) mainWindow.hide();
+                
+                // Take screenshot after brief delay
+                setTimeout(async () => {
+                    try {
+                        const screenshot = await mainWindow.webContents.capturePage();
+                        fs.writeFileSync(screenshotPath, screenshot.toPNG());
+                        sendToRenderer('screenshot-captured', screenshotPath);
+                        
+                        // Show window again if it was visible
+                        if (wasVisible) mainWindow.showInactive();
+                    } catch (error) {
+                        console.error('Screenshot error:', error);
+                    }
+                }, 100);
+            });
+            console.log(`Registered screenshot: ${keybinds.screenshot}`);
+        } catch (error) {
+            console.error(`Failed to register screenshot (${keybinds.screenshot}):`, error);
         }
     }
 }

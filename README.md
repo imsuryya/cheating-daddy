@@ -22,16 +22,17 @@ A real-time AI assistant that provides contextual help during video calls, inter
 ## Setup
 
 1. **Get a Gemini API Key**: Visit [Google AI Studio](https://aistudio.google.com/apikey)
-2. **Install Dependencies**: `npm install`
-3. **Run the App**: `npm start`
+2. **Get a Deepgram API Key**: Visit [Deepgram Console](https://console.deepgram.com/)
+3. **Install Dependencies**: `npm install`
+4. **Run the App**: `npm start`
 
 ## Usage
 
-1. Enter your Gemini API key in the main window
+1. Enter your API keys (Gemini and Deepgram) in the main window
 2. Choose your profile and language in settings
 3. Click "Start Session" to begin
 4. Position the window using keyboard shortcuts
-5. The AI will provide real-time assistance based on your screen and what interview asks
+5. The AI will provide real-time assistance based on your screen and speech recognition
 
 ## Keyboard Shortcuts
 
@@ -42,6 +43,7 @@ A real-time AI assistant that provides contextual help during video calls, inter
 
 ## Audio Capture
 
+- **Real-time Speech Recognition**: Powered by Deepgram's WebSocket API
 - **macOS**: [SystemAudioDump](https://github.com/Mohammed-Yasin-Mulla/Sound) for system audio
 - **Windows**: Loopback audio capture
 - **Linux**: Microphone input
@@ -50,5 +52,6 @@ A real-time AI assistant that provides contextual help during video calls, inter
 
 - Electron-compatible OS (macOS, Windows, Linux)
 - Gemini API key
+- Deepgram API key
 - Screen recording permissions
 - Microphone/audio permissions
